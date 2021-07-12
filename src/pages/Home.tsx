@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
 import { Header } from '../components/Header';
 import { Task, TasksList } from '../components/TasksList';
@@ -9,12 +9,21 @@ export function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   function handleAddTask(newTaskTitle: string) {
-    const newTask = {
-      id: new Date().getTime(),
-      title: newTaskTitle,
-      done: false
+    if (!tasks.find(task => task.title === newTaskTitle)) {
+
+      const newTask = {
+        id: new Date().getTime(),
+        title: newTaskTitle,
+        done: false
+      }
+      setTasks([...tasks, newTask])
     }
-    setTasks([...tasks, newTask])
+    else {
+      Alert.alert(
+        'To-do já existente', 
+        'Você já cadastrou um to-do com esse nome')
+    }
+    console.log(tasks)
   }
 
   function handleToggleTaskDone(id: number) {
@@ -27,17 +36,40 @@ export function Home() {
         return task
       }
     })
-
-
-    //const taskIndex = updatedTasks.findIndex(task => task.id === id)
-    //updatedTasks[taskIndex].done = !updatedTasks[taskIndex].done
     setTasks(updatedTasks)
   }
 
   function handleRemoveTask(id: number) {
-    const updatedTasks = tasks.filter(task => task.id !== id)
+    Alert.alert(
+      'Deletar item', 
+      'Tem certeza que deseja deletar este item?',
+      [
+        {
+          text: 'Sim',
+          onPress: ()=> {
+            const updatedTasks = tasks.filter(task => task.id !== id)
+            setTasks(updatedTasks)
+          },
+          style: 'destructive'
+        },
+        {
+          text: 'Não',
+          onPress: ()=> {console.log('Dismissed')},
+          style: 'default'
+        }
+      ]
+      )
+  }
+  function handleEditTask(id: number, newTaskTitle: string) {
+    const updatedTasks = tasks.map(task => {
+      if (task.id === id) {
+        task.title = newTaskTitle
+        return task
+      } else {
+        return task
+      }
+    })
     setTasks(updatedTasks)
-
   }
 
   return (
@@ -50,6 +82,7 @@ export function Home() {
         tasks={tasks} 
         toggleTaskDone={handleToggleTaskDone}
         removeTask={handleRemoveTask} 
+        editTask={handleEditTask}
       />
     </View>
   )
